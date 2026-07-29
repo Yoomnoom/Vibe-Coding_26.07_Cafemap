@@ -5,11 +5,18 @@ import { getCategoryColor, VISITED_MARKER_COLOR } from '../lib/categoryColors'
 
 const SEOUL_CITY_HALL = { lat: 37.5665, lng: 126.978 }
 
-// 방문 체크된 카페는 카테고리와 무관하게 고정 색 + 체크 표시, 그 외는 카테고리 색.
+const CLOSED_MARKER_COLOR = '#9ca3af'
+
+// 방문 체크된 카페는 카테고리와 무관하게 고정 색 + 체크 표시, 폐업 카페는 회색, 그 외는 카테고리 색.
 // 위치(lat/lng)는 그대로 두고 색상만 바꾼다.
 function createMarkerElement(cafe) {
   const el = document.createElement('div')
-  const color = cafe.visited ? VISITED_MARKER_COLOR : getCategoryColor(cafe.category)
+  const color =
+    cafe.status === 'closed'
+      ? CLOSED_MARKER_COLOR
+      : cafe.visited
+        ? VISITED_MARKER_COLOR
+        : getCategoryColor(cafe.category)
 
   el.style.cssText = `
     width: 22px;
@@ -60,8 +67,9 @@ function renderCafeMarkers(kakao, map, cafes, markersRef, infoWindowRef, onSelec
       })
 
       element.addEventListener('click', () => {
+        const label = cafe.status === 'closed' ? `${escapeHtml(cafe.name)} (폐업)` : escapeHtml(cafe.name)
         infoWindowRef.current.setContent(
-          `<div style="padding:6px 10px;font-size:13px;white-space:nowrap;">${escapeHtml(cafe.name)}</div>`
+          `<div style="padding:6px 10px;font-size:13px;white-space:nowrap;">${label}</div>`
         )
         infoWindowRef.current.setPosition(position)
         infoWindowRef.current.open(map)
